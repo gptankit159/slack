@@ -1,10 +1,11 @@
 import { Button } from '@material-ui/core';
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 import firebase from 'firebase/compat/app';
-function ChatInput({channelName , channelId}) {
-
+import { useAuthState } from 'react-firebase-hooks/auth';
+function ChatInput({channelName , channelId , chatRef}) {
+    const [user] = useAuthState(auth);
     const [input, setInput] = useState("");
     // console.log(channelId);
     const sendMessage =(e)=>{
@@ -17,16 +18,18 @@ function ChatInput({channelName , channelId}) {
         db.collection("rooms").doc(channelId).collection("messages").add({
             message:input,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            user : "Ankit",
-            userImage: "https://avatars.githubusercontent.com/u/59062386?s=40"
+            user : user.displayName,
+            userImage: user.photoURL
         })
-
+        chatRef.current.scrollIntoView({
+            behavior:"smooth",
+        })
         setInput("");
     }
   return <ChatInputConatiner>
       <form >
           <input 
-          placeholder={`Message Room`} 
+          placeholder={`Message #${channelName }`} 
           onChange={(e)=>setInput(e.target.value) } 
           value={input}
           />
